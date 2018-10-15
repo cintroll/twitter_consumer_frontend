@@ -3,10 +3,12 @@ import {withStyles} from '@material-ui/core/styles';
 import React from "react";
 import PropTypes from 'prop-types';
 
+import HourDayTable from './HourDayTable'
+
 const styles = theme => ({});
 
 function HourDayGroup(props) {
-    return (<div>To be done</div>);
+    return (<HourDayTable />);
 }
 
 HourDayGroup.propTypes = {

@@ -1,4 +1,4 @@
-export const hashtaglang_data = [
+const hashtaglang_data = [
     {
         "hashtag": "openbanking",
         "lang_group": [
@@ -273,4 +273,6 @@ export const hashtaglang_data = [
             }
         ]
     }
-]
+];
+
+export default hashtaglang_data;

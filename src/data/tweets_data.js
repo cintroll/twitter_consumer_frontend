@@ -1,4 +1,4 @@
-export const tweets = [
+const tweets_data = [
     {
         "id": 1051890783278813184,
         "hashtag": "openbanking",
@@ -8891,4 +8891,6 @@ export const tweets = [
             "lang": "sv"
         }
     }
-]
+];
+
+export default tweets_data;

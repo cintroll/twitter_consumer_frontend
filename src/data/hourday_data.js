@@ -1,4 +1,4 @@
-export const hourday_data = [
+const hourday_data = [
     {
         "timestamp": 1539633600,
         "count": 145
@@ -556,3 +556,5 @@ export const hourday_data = [
         "count": 1
     }
 ]
+
+export default hourday_data;

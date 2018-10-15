@@ -3,10 +3,12 @@ import {withStyles} from '@material-ui/core/styles';
 import React from "react";
 import PropTypes from 'prop-types';
 
+import TopFiveTable from './TopFiveTable'
+
 const styles = theme => ({});
 
 function TopFive(props) {
-    return (<div>To be done</div>);
+    return (<TopFiveTable />);
 }
 
 TopFive.propTypes = {

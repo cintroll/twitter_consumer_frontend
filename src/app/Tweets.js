@@ -3,10 +3,12 @@ import {withStyles} from '@material-ui/core/styles';
 import React from "react";
 import PropTypes from 'prop-types';
 
+import TweetTable from './TweetTable'
+
 const styles = theme => ({});
 
 function Tweets(props) {
-    return (<div>To be done</div>);
+    return (<TweetTable />);
 }
 
 Tweets.propTypes = {

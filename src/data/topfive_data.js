@@ -1,4 +1,4 @@
-export const topfive_dat = [
+const topfive_data = [
     {
         "user_id": 485475104,
         "user_name":"Ehickioya",
@@ -24,4 +24,6 @@ export const topfive_dat = [
         "user_name": "CloudExpo",
         "user_followers": 74750
     }
-]
+];
+
+export default topfive_data;
