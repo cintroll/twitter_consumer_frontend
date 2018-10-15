@@ -33,6 +33,7 @@ const styles = theme => ({
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
         }),
+        "background-color": "#1da1f2",
     },
     appBarShift: {
         width: `calc(100% - ${drawerWidth}px)`,
