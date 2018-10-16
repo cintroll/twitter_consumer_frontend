@@ -17,8 +17,6 @@ import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-import tweets_data from '../data/tweets_data'
-
 const actionsStyles = theme => ({
     root: {
         flexShrink: 0,
@@ -117,6 +115,7 @@ class TweetTable extends React.Component {
         page: 0,
         rowsPerPage: 15,
         hasData: false,
+        error: null,
     };
 
     handleChangePage = (event, page) => {
@@ -124,16 +123,28 @@ class TweetTable extends React.Component {
     };
 
     componentDidMount() {
-        fetch("https://bwd3gzngif.execute-api.sa-east-1.amazonaws.com/prod/twitter_api?type=1")
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    this.setState({
-                        hasData: true,
-                        tweets: result
-                    });
-                }
-            )
+        if (!this.state.hasData) {
+            fetch("https://bwd3gzngif.execute-api.sa-east-1.amazonaws.com/prod/twitter_api?type=0")
+                .then(res => res.json())
+                .then(
+                    (result) => {
+                        if (!result.hasOwnProperty("errorMessage")) {
+                            this.setState({
+                                hasData: true,
+                                tweets: result
+                            });
+                        }
+                        else {
+                            this.setState({
+                                error: {message: result["errorMessage"]},
+                                hasData: false
+                            });
+                        }
+                    }
+                ).catch(error => this.setState({
+                    error, hasData: false
+                }));
+        }
     }
 
     handleChangeRowsPerPage = event => {
@@ -142,62 +153,63 @@ class TweetTable extends React.Component {
 
     render() {
         const { classes } = this.props;
-        const { tweets, rowsPerPage, page, hasData } = this.state;
+        const { tweets, rowsPerPage, page, hasData, error } = this.state;
         const emptyRows = rowsPerPage - Math.min(rowsPerPage, tweets.length - page * rowsPerPage);
 
-        if (hasData) {
-            return (
-                <Paper className={classes.root}>
-                    <div className={classes.tableWrapper}>
-                        <Table className={classes.table}>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Tweet</TableCell>
-                                    <TableCell>Hashtag</TableCell>
-                                    <TableCell>User Name</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {tweets.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(tweet => {
-                                    return (
-                                        <TableRow key={tweet.id}>
-                                            <TableCell component="th" scope="row">
-                                                {tweet.text}
-                                            </TableCell>
-                                            <TableCell>{tweet.hashtag}</TableCell>
-                                            <TableCell>{tweet.user.name}</TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                                {emptyRows > 0 && (
-                                    <TableRow style={{ height: 48 * emptyRows }}>
-                                        <TableCell colSpan={6} />
+        if (error) {
+            return (<p>{error.message}</p>)
+        }
+
+        if (!hasData) {
+            return (<CircularProgress />);
+        }
+
+        return (
+            <Paper className={classes.root}>
+                <div className={classes.tableWrapper}>
+                    <Table className={classes.table}>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Tweet</TableCell>
+                                <TableCell>Hashtag</TableCell>
+                                <TableCell>User Name</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {tweets.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(tweet => {
+                                return (
+                                    <TableRow key={tweet.id}>
+                                        <TableCell component="th" scope="row">
+                                            {tweet.text}
+                                        </TableCell>
+                                        <TableCell>{tweet.hashtag}</TableCell>
+                                        <TableCell>{tweet.user.name}</TableCell>
                                     </TableRow>
-                                )}
-                            </TableBody>
-                            <TableFooter>
-                                <TableRow>
-                                    <TablePagination
-                                        colSpan={3}
-                                        count={tweets.length}
-                                        rowsPerPage={rowsPerPage}
-                                        page={page}
-                                        onChangePage={this.handleChangePage}
-                                        onChangeRowsPerPage={this.handleChangeRowsPerPage}
-                                        ActionsComponent={TablePaginationActionsWrapped}
-                                    />
+                                );
+                            })}
+                            {emptyRows > 0 && (
+                                <TableRow style={{ height: 48 * emptyRows }}>
+                                    <TableCell colSpan={6} />
                                 </TableRow>
-                            </TableFooter>
-                        </Table>
-                    </div>
-                </Paper>
-            );
-        }
-        else {
-            return (
-                <CircularProgress />
-            )
-        }
+                            )}
+                        </TableBody>
+                        <TableFooter>
+                            <TableRow>
+                                <TablePagination
+                                    colSpan={3}
+                                    count={tweets.length}
+                                    rowsPerPage={rowsPerPage}
+                                    page={page}
+                                    onChangePage={this.handleChangePage}
+                                    onChangeRowsPerPage={this.handleChangeRowsPerPage}
+                                    ActionsComponent={TablePaginationActionsWrapped}
+                                />
+                            </TableRow>
+                        </TableFooter>
+                    </Table>
+                </div>
+            </Paper>
+        );
     }
 }
 

@@ -11,8 +11,7 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-
-import hashtaglang_data from '../data/hashtaglang_data'
+import CircularProgress from '@material-ui/core/CircularProgress'
 
 function TabContainer(props) {
     return (
@@ -62,16 +61,50 @@ function LangTable(props) {
 
 class HashtagLangView extends React.Component {
     state = {
+        hashtaglang_data: [],
         value: 0,
+        hasData: false,
+        error: null,
     };
 
     handleChange = (event, value) => {
         this.setState({ value });
     };
 
+    componentDidMount() {
+        fetch("https://bwd3gzngif.execute-api.sa-east-1.amazonaws.com/prod/twitter_api?type=3")
+                .then(res => res.json())
+                .then(
+                    (result) => {
+                        if (!result.hasOwnProperty("errorMessage")) {
+                            this.setState({
+                                hasData: true,
+                                hashtaglang_data: result
+                            });
+                        }
+                        else {
+                            this.setState({
+                                error: {message: result["errorMessage"]},
+                                hasData: false
+                            });
+                        }
+                    }
+                ).catch(error => this.setState({
+                    error, hasData: false
+                }));
+    }
+
     render() {
         const { classes } = this.props;
-        const { value } = this.state;
+        const { value, hashtaglang_data, hasData, error } = this.state;
+
+        if (error) {
+            return (<p>{error.message}</p>)
+        }
+
+        if (!hasData) {
+            return (<CircularProgress />);
+        }
 
         return (
             <div className={classes.root}>
@@ -84,7 +117,7 @@ class HashtagLangView extends React.Component {
                         })}
                     </Tabs>
                 </AppBar>
-                <LangTable data={hashtaglang_data[value].lang_group}/>
+                <LangTable data={hashtaglang_data[value].lang_group} />
             </div>
         );
     }

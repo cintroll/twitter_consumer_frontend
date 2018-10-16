@@ -15,8 +15,7 @@ import FirstPageIcon from '@material-ui/icons/FirstPage';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
-
-import hourday_data from '../data/hourday_data'
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const actionsStyles = theme => ({
     root: {
@@ -112,10 +111,35 @@ const styles = theme => ({
 
 class HourDayTable extends React.Component {
     state = {
-        hourday_group: hourday_data,
+        hourday_group: [],
         page: 0,
         rowsPerPage: 15,
+        hasData: false,
+        error: null,
     };
+
+    componentDidMount() {
+        fetch("https://bwd3gzngif.execute-api.sa-east-1.amazonaws.com/prod/twitter_api?type=2")
+            .then(res => res.json())
+            .then(
+                (result) => {
+                    if (!result.hasOwnProperty("errorMessage")) {
+                        this.setState({
+                            hasData: true,
+                            hourday_group: result
+                        });
+                    }
+                    else {
+                        this.setState({
+                            error: { message: result["errorMessage"] },
+                            hasData: false
+                        });
+                    }
+                }
+            ).catch(error => this.setState({
+                error, hasData: false
+            }));
+    }
 
     handleChangePage = (event, page) => {
         this.setState({ page });
@@ -127,8 +151,16 @@ class HourDayTable extends React.Component {
 
     render() {
         const { classes } = this.props;
-        const { hourday_group, rowsPerPage, page } = this.state;
+        const { hourday_group, rowsPerPage, page, hasData, error } = this.state;
         const emptyRows = rowsPerPage - Math.min(rowsPerPage, hourday_group.length - page * rowsPerPage);
+
+        if (error) {
+            return (<p>{error.message}</p>)
+        }
+
+        if (!hasData) {
+            return (<CircularProgress />);
+        }
 
         return (
             <Paper className={classes.root}>
@@ -146,7 +178,7 @@ class HourDayTable extends React.Component {
                                     <TableRow key={HourDayTable.timestamp}>
                                         <TableCell component="th" scope="row">
                                             {
-                                               new Date(hourday.timestamp * 1000).toString()
+                                                new Date(hourday.timestamp * 1000).toString()
                                             }
                                         </TableCell>
                                         <TableCell numeric>{hourday.count}</TableCell>
