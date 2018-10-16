@@ -72,11 +72,21 @@ class HashtagLangView extends React.Component {
     };
 
     componentDidMount() {
+        const cachedData = sessionStorage.getItem("hashtaglang_data");
+        if (cachedData) {
+            this.setState({
+                hasData: true,
+                hashtaglang_data: JSON.parse(cachedData)
+            });
+            return;
+        }
+
         fetch("https://bwd3gzngif.execute-api.sa-east-1.amazonaws.com/prod/twitter_api?type=3")
                 .then(res => res.json())
                 .then(
                     (result) => {
                         if (!result.hasOwnProperty("errorMessage")) {
+                            sessionStorage.setItem("hashtaglang_data", JSON.stringify(result))
                             this.setState({
                                 hasData: true,
                                 hashtaglang_data: result

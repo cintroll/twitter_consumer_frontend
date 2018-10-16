@@ -111,7 +111,7 @@ const styles = theme => ({
 
 class TweetTable extends React.Component {
     state = {
-        tweets: [],
+        tweets_data: [],
         page: 0,
         rowsPerPage: 15,
         hasData: false,
@@ -123,28 +123,36 @@ class TweetTable extends React.Component {
     };
 
     componentDidMount() {
-        if (!this.state.hasData) {
-            fetch("https://bwd3gzngif.execute-api.sa-east-1.amazonaws.com/prod/twitter_api?type=0")
-                .then(res => res.json())
-                .then(
-                    (result) => {
-                        if (!result.hasOwnProperty("errorMessage")) {
-                            this.setState({
-                                hasData: true,
-                                tweets: result
-                            });
-                        }
-                        else {
-                            this.setState({
-                                error: {message: result["errorMessage"]},
-                                hasData: false
-                            });
-                        }
-                    }
-                ).catch(error => this.setState({
-                    error, hasData: false
-                }));
+        const cachedData = sessionStorage.getItem("tweets_data");
+        if (cachedData) {
+            this.setState({
+                hasData: true,
+                tweets_data: JSON.parse(cachedData)
+            });
+            return;
         }
+
+        fetch("https://bwd3gzngif.execute-api.sa-east-1.amazonaws.com/prod/twitter_api?type=0")
+            .then(res => res.json())
+            .then(
+                (result) => {                    
+                    if (!result.hasOwnProperty("errorMessage")) {
+                        sessionStorage.setItem("tweets_data", JSON.stringify(result))
+                        this.setState({
+                            hasData: true,
+                            tweets_data: result
+                        });
+                    }
+                    else {
+                        this.setState({
+                            error: { message: result["errorMessage"] },
+                            hasData: false
+                        });
+                    }
+                }
+            ).catch(error => this.setState({
+                error, hasData: false
+            }));
     }
 
     handleChangeRowsPerPage = event => {
@@ -153,8 +161,8 @@ class TweetTable extends React.Component {
 
     render() {
         const { classes } = this.props;
-        const { tweets, rowsPerPage, page, hasData, error } = this.state;
-        const emptyRows = rowsPerPage - Math.min(rowsPerPage, tweets.length - page * rowsPerPage);
+        const { tweets_data, rowsPerPage, page, hasData, error } = this.state;
+        const emptyRows = rowsPerPage - Math.min(rowsPerPage, tweets_data.length - page * rowsPerPage);
 
         if (error) {
             return (<p>{error.message}</p>)
@@ -176,7 +184,7 @@ class TweetTable extends React.Component {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {tweets.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(tweet => {
+                            {tweets_data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(tweet => {
                                 return (
                                     <TableRow key={tweet.id}>
                                         <TableCell component="th" scope="row">
@@ -197,7 +205,7 @@ class TweetTable extends React.Component {
                             <TableRow>
                                 <TablePagination
                                     colSpan={3}
-                                    count={tweets.length}
+                                    count={tweets_data.length}
                                     rowsPerPage={rowsPerPage}
                                     page={page}
                                     onChangePage={this.handleChangePage}

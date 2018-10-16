@@ -111,7 +111,7 @@ const styles = theme => ({
 
 class HourDayTable extends React.Component {
     state = {
-        hourday_group: [],
+        hourday_data: [],
         page: 0,
         rowsPerPage: 15,
         hasData: false,
@@ -119,14 +119,24 @@ class HourDayTable extends React.Component {
     };
 
     componentDidMount() {
+        const cachedData = sessionStorage.getItem("hourday_data");
+        if (cachedData) {
+            this.setState({
+                hasData: true,
+                hourday_data: JSON.parse(cachedData)
+            });
+            return;
+        }
+
         fetch("https://bwd3gzngif.execute-api.sa-east-1.amazonaws.com/prod/twitter_api?type=2")
             .then(res => res.json())
             .then(
                 (result) => {
                     if (!result.hasOwnProperty("errorMessage")) {
+                        sessionStorage.setItem("hourday_data", JSON.stringify(result))
                         this.setState({
                             hasData: true,
-                            hourday_group: result
+                            hourday_data: result
                         });
                     }
                     else {
@@ -151,8 +161,8 @@ class HourDayTable extends React.Component {
 
     render() {
         const { classes } = this.props;
-        const { hourday_group, rowsPerPage, page, hasData, error } = this.state;
-        const emptyRows = rowsPerPage - Math.min(rowsPerPage, hourday_group.length - page * rowsPerPage);
+        const { hourday_data, rowsPerPage, page, hasData, error } = this.state;
+        const emptyRows = rowsPerPage - Math.min(rowsPerPage, hourday_data.length - page * rowsPerPage);
 
         if (error) {
             return (<p>{error.message}</p>)
@@ -173,7 +183,7 @@ class HourDayTable extends React.Component {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {hourday_group.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(hourday => {
+                            {hourday_data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(hourday => {
                                 return (
                                     <TableRow key={HourDayTable.timestamp}>
                                         <TableCell component="th" scope="row">
@@ -195,7 +205,7 @@ class HourDayTable extends React.Component {
                             <TableRow>
                                 <TablePagination
                                     colSpan={3}
-                                    count={hourday_group.length}
+                                    count={hourday_data.length}
                                     rowsPerPage={rowsPerPage}
                                     page={page}
                                     onChangePage={this.handleChangePage}
